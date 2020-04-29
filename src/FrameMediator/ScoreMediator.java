@@ -12,10 +12,15 @@ public class ScoreMediator {
     private HashMap<String, Frame[]> frames;
     private ArrayList<String> bowlerNames;
     private int currentBowlerNum;
+    private int frameNumber;
 
+    /**
+     * Constructor for the score mediator
+     */
     public ScoreMediator(){
         this.bowlerNames = new ArrayList<>();
         this.frames = new HashMap<>();
+        this.frameNumber = 1;
     }
 
     /**
@@ -25,11 +30,7 @@ public class ScoreMediator {
      * @param bowlerName the bowler to be added
      */
     public void addPlayer(String bowlerName){
-        Frame[] newScores = new Frame[10];
-        for(int i = 0; i < 9; i++){
-            newScores[i] = new Frame(false);
-        }
-        newScores[9] = new Frame(true);
+        Frame[] newScores = makeNewFrames();
         this.bowlerNames.add(bowlerName);
         this.frames.put(bowlerName, newScores);
     }
@@ -51,8 +52,9 @@ public class ScoreMediator {
      */
     public void resetGame(){
         for(String bowlerName: frames.keySet()){
-            this.addPlayer(bowlerName);
+            this.frames.put(bowlerName, makeNewFrames());
         }
+        frameNumber = 1;
     }
 
     /**
@@ -71,7 +73,7 @@ public class ScoreMediator {
                     //let all past frames know about the last ball (including
                     //the most recent one to be needed)
                     boolean nextBowler = throwerFrames[j].addBall(ballThrown);
-                    if(nextBowler){
+                    if(j == i && nextBowler){
                         updateBowlerNum();
                     }
                 }
@@ -90,7 +92,7 @@ public class ScoreMediator {
         Frame[] bowlerFrames = frames.get(bowlerName);
         int[] framePoints = new int[10];
         int total = 0;
-        for(int i = 0; i < 10; i++){
+        for(int i = 0; i < frameNumber; i++){
             total += bowlerFrames[i].getScore();
             framePoints[i] = total;
         }
@@ -118,11 +120,30 @@ public class ScoreMediator {
         return scoreString;
     }
 
+    /**
+     * Function to update the current bowler number within the mediator
+     */
     public void updateBowlerNum(){
         if(currentBowlerNum == bowlerNames.size() - 1){
             currentBowlerNum = 0;
+            if(frameNumber < 10) {
+                frameNumber++;
+            }
         }else{
             currentBowlerNum++;
         }
+    }
+
+    /**
+     * Makes new frames for a new game! (or reset game).
+     * @return The new frame array
+     */
+    private Frame[] makeNewFrames(){
+        Frame[] newScores = new Frame[10];
+        for(int i = 0; i < 9; i++){
+            newScores[i] = new Frame(false);
+        }
+        newScores[9] = new Frame(true);
+        return newScores;
     }
 }
